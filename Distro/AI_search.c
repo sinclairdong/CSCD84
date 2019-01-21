@@ -238,17 +238,14 @@ void search(double gr[graph_size][4], int path[graph_size][2], int visit_order[s
 
 
  // Stub so that the code compiles/runs - The code below will be removed and replaced by your code!
-	path[0][0]=mouse_loc[0][0];
-	path[0][1]=mouse_loc[0][1];
-	path[1][0]=mouse_loc[0][0];
-	path[1][1]=mouse_loc[0][1];
+	bfs(gr,path,visit_order,cat_loc,cats,cheese_loc,cheeses,mouse_loc);
 
 	return;
 }
 
 void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int cheeses, int mouse_loc[1][2]){
 	// to-do check for cats
-	
+	int debug;
 	// initialize a queue in a form of a linklist
 	struct Node* head;
 	struct Node* rear;
@@ -293,29 +290,29 @@ void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 		
 		// top
 		new_node_loc = cord_to_number(head->x,head->y+1);
-		if(gr[graph_location][0] && history[new_node_loc] != -1){
+		if(gr[graph_location][0] && history[new_node_loc] == -1){
 			rear = insert_Q(head->x,head->y+1,rear);
 			history[new_node_loc] = graph_location;
 		}
 		
 		// right
 		new_node_loc = cord_to_number(head->x+1,head->y);
-		if(gr[graph_location][0] && history[new_node_loc] != -1){
-			rear = insert_Q(head->x,head->y+1,rear);
+		if(gr[graph_location][1] && history[new_node_loc] == -1){
+			rear = insert_Q(head->x+1,head->y,rear);
 			history[new_node_loc] = graph_location;
 		}	
 		
 		// bottom
 		new_node_loc = cord_to_number(head->x,head->y-1);
-		if(gr[graph_location][0] && history[new_node_loc] != -1){
-			rear = insert_Q(head->x,head->y+1,rear);
+		if(gr[graph_location][2] && history[new_node_loc] == -1){
+			rear = insert_Q(head->x,head->y-1,rear);
 			history[new_node_loc] = graph_location;
 		}	
 		
 		// left
 		new_node_loc = cord_to_number(head->x-1,head->y);
-		if(gr[graph_location][0] && history[new_node_loc] != -1){
-			rear = insert_Q(head->x,head->y+1,rear);
+		if(gr[graph_location][3] && history[new_node_loc] == -1){
+			rear = insert_Q(head->x-1,head->y,rear);
 			history[new_node_loc] = graph_location;
 		}
 		// remove the node from the queue ready for next iteration
@@ -324,29 +321,27 @@ void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 	
 	// free any node that left behind in the stack in case if there is an early exit
 	struct Node* tmp;
-	
 	while (head != NULL)
     {
        tmp = head;
        head = head->next;
        free(tmp);
     }
-    
     // to do- with the goal location use history to trace back all path then update the path then return
     // find the backward path first
     int reverse[graph_size];
     int initial_location = cord_to_number(mouse_loc[0][0],mouse_loc[0][1]);
-    int pointer = 1;
+    int pointer = 0;
     reverse[0] = cord_to_number(goal[0],goal[1]);
-    
     while(reverse[pointer] != initial_location){
     	reverse[pointer+1] = history[reverse[pointer]];
     	pointer++;
     }
     i = 0;
-	for(pointer; pointer > 0; pointer--){
+	for(pointer; pointer >= 0; pointer--){
 		path[i][0]=reverse[pointer] % size_X;
 		path[i][1]=reverse[pointer] / size_X;
+		// printf("x:%d Y:%d\n",path[i][0],path[i][1]);
 		i++;
 	}
 	return;
