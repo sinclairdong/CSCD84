@@ -28,17 +28,17 @@
 % COMPLETE THIS TEXT BOX:
 %
 % 1) Student Name: Yuesen Dong		
-% 2) Student Name:		
+% 2) Student Name: Tao Gao		
 %
 % 1) Student number: 1002387632
-% 2) Student number:
+% 2) Student number: 1001368281
 % 
 % 1) UtorID Dongyues
-% 2) UtorID
+% 2) UtorID gaotao2
 % 
 % We hereby certify that the work contained here is our own
 %
-% ________Yuesen Dong_             _____________________
+% ________Yuesen Dong_             _____Tao Gao________________
 % (sign with your name)            (sign with your name)
 ***********************************************************************/
 
@@ -247,6 +247,14 @@ void search(double gr[graph_size][4], int path[graph_size][2], int visit_order[s
 
 	return;
 }
+
+void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int mouse_loc[1][2]){
+	// initialize a queue in a form of a linklist
+	// add current location on queue
+	// enter loop untill queue is empty or head and rear == NULL
+	return;
+}
+
 
 void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int mouse_loc[1][2]){
 	// initialize a queue in a form of a linklist
