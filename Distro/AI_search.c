@@ -27,25 +27,23 @@
 /**********************************************************************
 % COMPLETE THIS TEXT BOX:
 %
-% 1) Student Name:		
+% 1) Student Name: Yuesen Dong		
 % 2) Student Name:		
 %
-% 1) Student number:
+% 1) Student number: 1002387632
 % 2) Student number:
 % 
-% 1) UtorID
+% 1) UtorID Dongyues
 % 2) UtorID
 % 
 % We hereby certify that the work contained here is our own
 %
-% ____________________             _____________________
+% ________Yuesen Dong_             _____________________
 % (sign with your name)            (sign with your name)
 ***********************************************************************/
 
 #include "AI_search.h"
-
-void search(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int cheeses, int mouse_loc[1][2], int mode, int (*heuristic)(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int mouse_loc[1][2], int cats, int cheeses, double gr[graph_size][4]))
-{
+#include <stdlib.h>
  /*
    This function is the interface between your solution for the assignment and the driver code. The driver code
    in AI_search_core_GL will call this function once per frame, and provide the following data
@@ -193,6 +191,43 @@ void search(double gr[graph_size][4], int path[graph_size][2], int visit_order[s
  *
  ********************************************************************************************************/
 
+// constants and strucks
+int const SIDE_LENGTH = 32;
+int const BOARD_SIZE = 1024;
+
+struct Node{
+	int x;
+	int y;
+	struct Node *next; 
+};
+
+// insert a node into the linked list and return a pointer to that node
+struct Node* insert(int x, int y, Node * prev){
+	struct Node* result = (struct Node *) malloc(sizeof(struct Node));
+	result->x = x;
+	result->y = y;
+	if(prev != NULL){
+		prev->next = result;
+	}
+	return result;
+}
+
+// remove a node from the linked list and return the pointer to the next node
+struct Node* remove(Node * head){
+	struct Node* result = head->next;
+	free(head);
+	return result;	
+}
+
+// function turn a number to xy cord by the fomula given by the hand out
+int cord_to_number(int x_cord, int y_cord){
+	return y_cord * SIDE_LENGTH + x_cord;
+}
+
+void search(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int cheeses, int mouse_loc[1][2], int mode, int (*heuristic)(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int mouse_loc[1][2], int cats, int cheeses, double gr[graph_size][4]))
+{
+
+
  // Stub so that the code compiles/runs - The code below will be removed and replaced by your code!
 
  path[0][0]=mouse_loc[0][0];
@@ -200,7 +235,11 @@ void search(double gr[graph_size][4], int path[graph_size][2], int visit_order[s
  path[1][0]=mouse_loc[0][0];
  path[1][1]=mouse_loc[0][1];
 
- return;
+	return;
+}
+
+void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2]){
+	return;
 }
 
 int H_cost(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int mouse_loc[1][2], int cats, int cheeses, double gr[graph_size][4])
