@@ -43,7 +43,7 @@
 ***********************************************************************/
 
 #include "AI_search.h"
-#include <stdlib.h>
+
  /*
    This function is the interface between your solution for the assignment and the driver code. The driver code
    in AI_search_core_GL will call this function once per frame, and provide the following data
@@ -192,8 +192,6 @@
  ********************************************************************************************************/
 
 // constants and strucks
-int const SIDE_LENGTH = 32;
-int const BOARD_SIZE = 1024;
 
 struct Node{
 	int x;
@@ -206,6 +204,7 @@ struct Node* insert_Q(int x, int y, Node * prev){
 	struct Node* result = (struct Node *) malloc(sizeof(struct Node));
 	result->x = x;
 	result->y = y;
+	result->next = NULL;
 	if(prev != NULL){
 		prev->next = result;
 	}
@@ -231,7 +230,7 @@ struct Node* remove(Node * head){
 
 // function turn a number to xy cord by the fomula given by the hand out
 int cord_to_number(int x_cord, int y_cord){
-	return y_cord * SIDE_LENGTH + x_cord;
+	return y_cord * size_X + x_cord;
 }
 
 void search(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int cheeses, int mouse_loc[1][2], int mode, int (*heuristic)(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int mouse_loc[1][2], int cats, int cheeses, double gr[graph_size][4]))
@@ -239,19 +238,112 @@ void search(double gr[graph_size][4], int path[graph_size][2], int visit_order[s
 
 
  // Stub so that the code compiles/runs - The code below will be removed and replaced by your code!
-
- path[0][0]=mouse_loc[0][0];
- path[0][1]=mouse_loc[0][1];
- path[1][0]=mouse_loc[0][0];
- path[1][1]=mouse_loc[0][1];
+	bfs(gr,path,visit_order,cat_loc,cats,cheese_loc,cheeses,mouse_loc);
 
 	return;
 }
 
-void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int mouse_loc[1][2]){
+void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int cheeses, int mouse_loc[1][2]){
+	// to-do check for cats
+	int debug;
 	// initialize a queue in a form of a linklist
+	struct Node* head;
+	struct Node* rear;
+	
 	// add current location on queue
-	// enter loop untill queue is empty or head and rear == NULL
+	head = insert_Q(mouse_loc[0][0],mouse_loc[0][1], NULL);
+	rear = head;
+	
+	// see how many nodes had been expanded
+	int order = 0;
+	
+	// have somting to keep track of the predecessor and the final chees position
+	// initialize the x value to be -1 to indicate that it hasn't been visited yet
+	int history[graph_size];
+	int goal[2];
+	int i;
+	for(i = 0; i < graph_size; i++){
+		history[i] = -1;
+	}
+	
+	// now keep looping untill we found the chess or the stack is empty
+	while (head != NULL){
+		// set the visit_order
+		visit_order[head->x][head->y] = order;
+		order++;
+		// check if head is a cheese location if so break the loop
+		int i;
+		for(i = 0; i < cheeses; i++){
+			if((cheese_loc[i][0] == head->x) && (cheese_loc[i][1] == head->y)){
+				goal[0] = head->x;
+				goal[1] = head->y;
+				break;
+			} 
+		}
+		
+		// find the graph number converting from cord
+		int graph_location = cord_to_number(head->x,head->y);
+		
+		// add 4 new node and I can't figure out a way to use a loop to do this
+		// only add it when it has't been added before and it is a connection
+		int new_node_loc;
+		
+		// top
+		new_node_loc = cord_to_number(head->x,head->y+1);
+		if(gr[graph_location][0] && history[new_node_loc] == -1){
+			rear = insert_Q(head->x,head->y+1,rear);
+			history[new_node_loc] = graph_location;
+		}
+		
+		// right
+		new_node_loc = cord_to_number(head->x+1,head->y);
+		if(gr[graph_location][1] && history[new_node_loc] == -1){
+			rear = insert_Q(head->x+1,head->y,rear);
+			history[new_node_loc] = graph_location;
+		}	
+		
+		// bottom
+		new_node_loc = cord_to_number(head->x,head->y-1);
+		if(gr[graph_location][2] && history[new_node_loc] == -1){
+			rear = insert_Q(head->x,head->y-1,rear);
+			history[new_node_loc] = graph_location;
+		}	
+		
+		// left
+		new_node_loc = cord_to_number(head->x-1,head->y);
+		if(gr[graph_location][3] && history[new_node_loc] == -1){
+			rear = insert_Q(head->x-1,head->y,rear);
+			history[new_node_loc] = graph_location;
+		}
+		// remove the node from the queue ready for next iteration
+		head = remove(head);
+	}
+	
+	// free any node that left behind in the stack in case if there is an early exit
+	struct Node* tmp;
+	while (head != NULL)
+    {
+       tmp = head;
+       head = head->next;
+       free(tmp);
+    }
+    // to do- with the goal location use history to trace back all path then update the path then return
+    // find the backward path first
+    int reverse[graph_size];
+    int initial_location = cord_to_number(mouse_loc[0][0],mouse_loc[0][1]);
+    int pointer = 0;
+    reverse[0] = cord_to_number(goal[0],goal[1]);
+    while(reverse[pointer] != initial_location){
+    	reverse[pointer+1] = history[reverse[pointer]];
+    	pointer++;
+    }
+    i = 0;
+	for(pointer; pointer >= 0; pointer--){
+		path[i][0]=reverse[pointer] % size_X;
+		path[i][1]=reverse[pointer] / size_X;
+		// printf("x:%d Y:%d\n",path[i][0],path[i][1]);
+		i++;
+	}
 	return;
 }
 
