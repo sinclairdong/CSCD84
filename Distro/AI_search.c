@@ -201,8 +201,8 @@ struct Node{
 	struct Node *next; 
 };
 
-// insert a node into the linked list and return a pointer to that node
-struct Node* insert(int x, int y, Node * prev){
+// insert a node into the linked list and return a pointer to that node this one is for Queue for BFS
+struct Node* insert_Q(int x, int y, Node * prev){
 	struct Node* result = (struct Node *) malloc(sizeof(struct Node));
 	result->x = x;
 	result->y = y;
@@ -211,6 +211,16 @@ struct Node* insert(int x, int y, Node * prev){
 	}
 	return result;
 }
+
+// insert a node into the linked list and return a pointer to that node this one is for stack for DFS
+struct Node* insert_S(int x, int y, Node * next){
+	struct Node* result = (struct Node *) malloc(sizeof(struct Node));
+	result->x = x;
+	result->y = y;
+	result->next = next;
+	return result;
+}
+
 
 // remove a node from the linked list and return the pointer to the next node
 struct Node* remove(Node * head){
@@ -238,7 +248,10 @@ void search(double gr[graph_size][4], int path[graph_size][2], int visit_order[s
 	return;
 }
 
-void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2]){
+void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int mouse_loc[1][2]){
+	// initialize a queue in a form of a linklist
+	// add current location on queue
+	// enter loop untill queue is empty or head and rear == NULL
 	return;
 }
 
