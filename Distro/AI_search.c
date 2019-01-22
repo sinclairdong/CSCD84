@@ -727,10 +727,12 @@ int H_cost(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int mouse_lo
 
 		These arguments are as described in the search() function above
  */
- 	int heuristics[10];
+ 	// find the euclidy distance from current to cheeses
+ 	// it must be bonded by the actrual cost because it i in 2 D the straight line is the shortest distance
+ 	int heuristics[cheeses];
     int i;
 	int min;
-	for (i = 0; i < 10; i++){
+	for (i = 0; i < cheeses; i++){
 		heuristics[i] = sqrt((cheese_loc[i][0] - x) * (cheese_loc[i][0] - x) + (cheese_loc[i][1] - y) * (cheese_loc[i][1] - y));
 		if (i == 0){
 			min = heuristics[i];
@@ -758,7 +760,32 @@ int H_cost_nokitty(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int 
 
 	Input arguments have the same meaning as in the H_cost() function above.
  */
-
- return(1);		// <-- Evidently you will need to update this.
+ 	// same as above but add cat location to it as the clost cat
+ 	// find the closet cat
+ 	int cat, i, min_cat;
+ 	if(cats > 0){
+ 		min_cat = (cat_loc[0][0]-x) + (cat_loc[0][1]-y);
+ 		for(i = 1; i < cats; i++){
+ 			cat = (size_X + size_Y) - ((cat_loc[i][0]-x) + (cat_loc[i][1]-y));
+ 			if (cat < min_cat){
+ 				min_cat = cat;
+ 			}
+ 		}
+ 	}
+ 	
+ 	
+ 	
+ 	int heuristics[10];
+	int min;
+	for (i = 0; i < 10; i++){
+		heuristics[i] = sqrt((cheese_loc[i][0] - x) * (cheese_loc[i][0] - x) + (cheese_loc[i][1] - y) * (cheese_loc[i][1] - y));
+		if (i == 0){
+			min = heuristics[i];
+		}
+		if (heuristics[i] < min){
+			min = heuristics[i];
+		}
+	}
+ return min + min_cat;		// <-- Evidently you will need to update this.
 }
 
