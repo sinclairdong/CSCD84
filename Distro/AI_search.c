@@ -324,9 +324,9 @@ void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 		}
 		
 		// right
-		new_node_loc = cord_to_number(head->x-1,head->y);
-		if((gr[graph_location][1] == 1) && (history[new_node_loc] == -1 && !(is_cat(head->x-1,head->y,cats,cat_loc)))){
-			rear = insert_Q(head->x-1,head->y,rear);
+		new_node_loc = cord_to_number(head->x+1,head->y);
+		if((gr[graph_location][1] == 1) && (history[new_node_loc] == -1 && !(is_cat(head->x+1,head->y,cats,cat_loc)))){
+			rear = insert_Q(head->x+1,head->y,rear);
 			history[new_node_loc] = graph_location;
 			if(is_cheese(rear->x,rear->y,cheeses,cheese_loc)){
 				goal[0] = rear->x;
@@ -348,9 +348,9 @@ void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 		}	
 		
 		// left
-		new_node_loc = cord_to_number(head->x+1,head->y);
-		if((gr[graph_location][3] == 1) && (history[new_node_loc] == -1 && !(is_cat(head->x+1,head->y,cats,cat_loc)))){
-			rear = insert_Q(head->x+1,head->y,rear);
+		new_node_loc = cord_to_number(head->x-1,head->y);
+		if((gr[graph_location][3] == 1) && (history[new_node_loc] == -1 && !(is_cat(head->x-1,head->y,cats,cat_loc)))){
+			rear = insert_Q(head->x-1,head->y,rear);
 			history[new_node_loc] = graph_location;
 			if(is_cheese(rear->x,rear->y,cheeses,cheese_loc)){
 				goal[0] = rear->x;
