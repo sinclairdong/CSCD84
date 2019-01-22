@@ -239,8 +239,32 @@ void search(double gr[graph_size][4], int path[graph_size][2], int visit_order[s
 
  // Stub so that the code compiles/runs - The code below will be removed and replaced by your code!
 	bfs(gr,path,visit_order,cat_loc,cats,cheese_loc,cheeses,mouse_loc);
-
+	
 	return;
+}
+
+int is_cheese(int x, int y, int cheeses, int cheese_loc[10][2]){
+	int i;
+	for(i = 0; i < cheeses; i++){
+		if((cheese_loc[i][0] == x) && (cheese_loc[i][1] == y)){	
+			return 1;
+			break;
+		} 
+	}
+	
+	return 0;
+}
+
+int is_cat(int x, int y, int cats, int cat_loc[10][2]){
+	int i;
+	for(i = 0; i < cats; i++){
+		if((cat_loc[i][0] == x) && (cat_loc[i][1] == y)){	
+			return 1;
+			break;
+		} 
+	}
+	
+	return 0;
 }
 
 void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int cheeses, int mouse_loc[1][2]){
@@ -271,16 +295,7 @@ void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 		// set the visit_order
 		visit_order[head->x][head->y] = order;
 		order++;
-		// check if head is a cheese location if so break the loop
-		int i;
-		for(i = 0; i < cheeses; i++){
-			if((cheese_loc[i][0] == head->x) && (cheese_loc[i][1] == head->y)){
-				goal[0] = head->x;
-				goal[1] = head->y;
-				break;
-			} 
-		}
-		
+				
 		// find the graph number converting from cord
 		int graph_location = cord_to_number(head->x,head->y);
 		
@@ -290,30 +305,50 @@ void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 		
 		// top
 		new_node_loc = cord_to_number(head->x,head->y+1);
-		if(gr[graph_location][0] && history[new_node_loc] == -1){
+		if(gr[graph_location][0] && history[new_node_loc] == -1 && !(is_cat(head->x,head->y+1,cats,cat_loc))){
 			rear = insert_Q(head->x,head->y+1,rear);
 			history[new_node_loc] = graph_location;
+			if(is_cheese(rear->x,rear->y,cheeses,cheese_loc)){
+				goal[0] = rear->x;
+				goal[1] = rear->y;
+				break;
+			}
 		}
 		
 		// right
 		new_node_loc = cord_to_number(head->x+1,head->y);
-		if(gr[graph_location][1] && history[new_node_loc] == -1){
+		if(gr[graph_location][1] && history[new_node_loc] == -1 && !(is_cat(head->x+1,head->y,cats,cat_loc))){
 			rear = insert_Q(head->x+1,head->y,rear);
 			history[new_node_loc] = graph_location;
+			if(is_cheese(rear->x,rear->y,cheeses,cheese_loc)){
+				goal[0] = rear->x;
+				goal[1] = rear->y;
+				break;
+			}
 		}	
 		
 		// bottom
 		new_node_loc = cord_to_number(head->x,head->y-1);
-		if(gr[graph_location][2] && history[new_node_loc] == -1){
+		if(gr[graph_location][2] && history[new_node_loc] == -1 && !(is_cat(head->x,head->y-1,cats,cat_loc))){
 			rear = insert_Q(head->x,head->y-1,rear);
 			history[new_node_loc] = graph_location;
+			if(is_cheese(rear->x,rear->y,cheeses,cheese_loc)){
+				goal[0] = rear->x;
+				goal[1] = rear->y;
+				break;
+			}
 		}	
 		
 		// left
 		new_node_loc = cord_to_number(head->x-1,head->y);
-		if(gr[graph_location][3] && history[new_node_loc] == -1){
+		if(gr[graph_location][3] && history[new_node_loc] == -1 && !(is_cat(head->x-1,head->y,cats,cat_loc))){
 			rear = insert_Q(head->x-1,head->y,rear);
 			history[new_node_loc] = graph_location;
+			if(is_cheese(rear->x,rear->y,cheeses,cheese_loc)){
+				goal[0] = rear->x;
+				goal[1] = rear->y;
+				break;
+			}
 		}
 		// remove the node from the queue ready for next iteration
 		head = remove(head);
@@ -341,7 +376,6 @@ void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 	for(pointer; pointer >= 0; pointer--){
 		path[i][0]=reverse[pointer] % size_X;
 		path[i][1]=reverse[pointer] / size_X;
-		// printf("x:%d Y:%d\n",path[i][0],path[i][1]);
 		i++;
 	}
 	return;
