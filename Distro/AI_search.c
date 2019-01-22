@@ -271,6 +271,10 @@ int is_cat(int x, int y, int cats, int cat_loc[10][2]){
 	return 0;
 }
 
+void a_star(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int cheeses, int mouse_loc[1][2], int mode, int (*heuristic)(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int mouse_loc[1][2], int cats, int cheeses, double gr[graph_size][4])){
+	
+}
+
 void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int cheeses, int mouse_loc[1][2]){
 	// if on top of hceese stay where you are
 	if(is_cheese(mouse_loc[0][0], mouse_loc[0][1], cheeses, cheese_loc)){
