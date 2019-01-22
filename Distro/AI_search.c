@@ -196,6 +196,7 @@
 struct Node{
 	int x;
 	int y;
+	int cost;
 	struct Node *next; 
 };
 
@@ -220,6 +221,36 @@ struct Node* insert_S(int x, int y, Node * next){
 	return result;
 }
 
+//insert a node into a priority queue implemented using linkedlist
+struct Node* insert_P(int x, int y, int cost, Node * head){
+
+
+	struct Node* result = (struct Node *) malloc(sizeof(struct Node));
+	result->x = x;
+	result->y = y;
+	result->cost = cost;
+	result->next = NULL;
+
+    if (head == NULL){
+         head = result;
+		 return result;
+	}
+
+	if (head->cost > result->cost){
+		result->next = head;
+		return result;
+	}
+	
+	struct Node* temp = head;
+
+	while(temp->next != NULL && result->cost > temp->next->cost){
+		temp = temp->next;
+	}
+	result->next = temp->next;
+	temp->next = result;
+
+	return head;
+}
 
 // remove a node from the linked list and return the pointer to the next node
 struct Node* remove(Node * head){
@@ -241,7 +272,9 @@ void search(double gr[graph_size][4], int path[graph_size][2], int visit_order[s
 		bfs(gr,path,visit_order,cat_loc,cats,cheese_loc,cheeses,mouse_loc);
 	} else if (mode == 1){
 		dfs(gr,path,visit_order,cat_loc,cats,cheese_loc,cheeses,mouse_loc);
-    } 
+    } else if (mode == 2){
+    	a_star(gr,path,visit_order,cat_loc,cats,cheese_loc,cheeses,mouse_loc, *heuristic);
+    }
 /*	printf("Path:X:%d Y:%d\n",path[1][0],path[1][1]);*/
 /*	printf("Cat:X:%d Y:%d\n\n",cat_loc[0][0],cat_loc[0][1]);*/
 	return;
@@ -271,8 +304,150 @@ int is_cat(int x, int y, int cats, int cat_loc[10][2]){
 	return 0;
 }
 
-void a_star(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int cheeses, int mouse_loc[1][2], int mode, int (*heuristic)(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int mouse_loc[1][2], int cats, int cheeses, double gr[graph_size][4])){
+void a_star(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int cheeses, int mouse_loc[1][2], int (*heuristic)(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int mouse_loc[1][2], int cats, int cheeses, double gr[graph_size][4])){
+	// if on top of hceese stay where you are
+	if(is_cheese(mouse_loc[0][0], mouse_loc[0][1], cheeses, cheese_loc)){
+		path[0][0] = mouse_loc[0][0];
+		path[0][1] = mouse_loc[0][1];
+		path[1][0] = mouse_loc[0][0];
+		path[1][1] = mouse_loc[0][1];
+		return;
+	}
+	// initialize a queue in a form of a linklist
+	struct Node* head;
+	// add current location on queue
+	head = insert_P(mouse_loc[0][0],mouse_loc[0][1], 0, NULL);
 	
+	// see how many nodes had been expanded
+	int order = 0;
+	// have somting to keep track of the predecessor and the final chees position
+	// initialize the x value to be -1 to indicate that it hasn't been visited yet
+	int history[graph_size][2];
+	history[cord_to_number(head->x,head->y)][1]=0;
+	int goal[2];
+	goal[0] = -1;
+	goal[1] = -1;
+	int i;
+	for(i = 0; i < graph_size; i++){
+		history[i][0] = -1;
+	}
+	// now keep looping untill we found the chess or the stack is empty
+	while (head != NULL){
+		// set the visit_order
+		visit_order[head->x][head->y] = order;
+		order++;
+				
+		// find the graph number converting from cord
+		int graph_location = cord_to_number(head->x,head->y);
+		
+		// add 4 new node and I can't figure out a way to use a loop to do this
+		// only add it when it has't been added before and it is a connection
+		int new_node_loc;
+		int cost;
+		
+		// top
+		new_node_loc = cord_to_number(head->x,head->y-1);
+		if((gr[graph_location][0] == 1) && (history[new_node_loc][0] == -1 && !(is_cat(head->x,head->y-1,cats,cat_loc)))){
+		
+			history[new_node_loc][0] = graph_location;
+			history[new_node_loc][1] = history[graph_location][1] + 1;
+			cost = history[new_node_loc][1] + heuristic(head->x,head->y-1, cat_loc, cheese_loc, mouse_loc, cats, cheeses, gr);
+			head->next = insert_P(head->x,head->y-1,cost,head->next);
+			
+			if(is_cheese(head->x,head->y-1,cheeses,cheese_loc)){
+				goal[0] = head->x;
+				goal[1] = head->y-1;
+				break;
+			}
+		}
+		
+		// right
+		new_node_loc = cord_to_number(head->x+1,head->y);
+		if((gr[graph_location][1] == 1) && (history[new_node_loc][0] == -1 && !(is_cat(head->x+1,head->y,cats,cat_loc)))){
+			
+			history[new_node_loc][0] = graph_location;
+			history[new_node_loc][1] = history[graph_location][1] + 1;
+			cost = history[new_node_loc][1] + heuristic(head->x+1,head->y, cat_loc, cheese_loc, mouse_loc, cats, cheeses, gr);
+			head->next = insert_P(head->x+1,head->y,cost, head->next);
+			
+			if(is_cheese(head->x+1,head->y,cheeses,cheese_loc)){
+				goal[0] = head->x+1;
+				goal[1] = head->y;
+				break;
+			}
+		}	
+		
+		// bottom
+		new_node_loc = cord_to_number(head->x,head->y+1);
+		if((gr[graph_location][2] == 1) && (history[new_node_loc][0] == -1 && !(is_cat(head->x,head->y+1,cats,cat_loc)))){
+		
+			history[new_node_loc][0] = graph_location;
+			history[new_node_loc][1] = history[graph_location][1] + 1;
+			cost = history[new_node_loc][1] + heuristic(head->x,head->y+1, cat_loc, cheese_loc, mouse_loc, cats, cheeses, gr);
+			head->next = insert_P(head->x,head->y+1,cost, head->next);
+
+			if(is_cheese(head->x,head->y+1,cheeses,cheese_loc)){
+				goal[0] = head->x;
+				goal[1] = head->y+1;
+				break;
+			}
+		}	
+		
+		// left
+		new_node_loc = cord_to_number(head->x-1,head->y);
+		if((gr[graph_location][3] == 1) && (history[new_node_loc][0] == -1 && !(is_cat(head->x-1,head->y,cats,cat_loc)))){
+		
+			history[new_node_loc][0] = graph_location;
+			history[new_node_loc][1] = history[graph_location][1] + 1;
+			head->next = insert_P(head->x-1,head->y,cost, head->next);
+			cost = history[new_node_loc][1] + heuristic(head->x-1,head->y, cat_loc, cheese_loc, mouse_loc, cats, cheeses, gr);
+
+			if(is_cheese(head->x-1,head->y,cheeses,cheese_loc)){
+				goal[0] = head->x-1;
+				goal[1] = head->y;
+				break;
+			}
+		}
+		// remove the node from the queue ready for next iteration
+		head = remove(head);
+	}
+	// printf("X:%dY:%d\n",goal[0],goal[1]);
+	// no goal stay where you are
+	if(goal[0] == -1){
+		for(i=0;i<graph_size;i++){
+			path[i][0] = mouse_loc[0][0];
+			path[i][1] = mouse_loc[0][1];
+		}
+		return;
+	}
+	
+	// free any node that left behind in the stack in case if there is an early exit
+	struct Node* tmp;
+	while (head != NULL)
+    {
+       tmp = head;
+       head = head->next;
+       free(tmp);
+    }
+    // to do- with the goal location use history to trace back all path then update the path then return
+    // find the backward path first
+    int reverse[graph_size];
+    int initial_location = cord_to_number(mouse_loc[0][0],mouse_loc[0][1]);
+    int pointer = 0;
+    reverse[0] = cord_to_number(goal[0],goal[1]);
+    while(reverse[pointer] != initial_location){
+    	reverse[pointer+1] = history[reverse[pointer]][0];
+    	pointer++;
+    }
+
+    i = 0;
+	for(pointer; pointer >= 0; pointer--){
+		path[i][0]=reverse[pointer] % size_X;
+		path[i][1]=reverse[pointer] / size_X;
+		i++;
+	}
+	return;
+
 }
 
 void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int cheeses, int mouse_loc[1][2]){
@@ -321,7 +496,7 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 			history[new_node_loc] = graph_location;
 			if(is_cheese(head->x,head->y-1,cheeses,cheese_loc)){
 				goal[0] = head->x;
-				goal[1] = head->y;
+				goal[1] = head->y-1;
 				break;
 			}
 		}
@@ -332,7 +507,7 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 			head->next = insert_S(head->x+1,head->y,head->next);
 			history[new_node_loc] = graph_location;
 			if(is_cheese(head->x+1,head->y,cheeses,cheese_loc)){
-				goal[0] = head->x;
+				goal[0] = head->x+1;
 				goal[1] = head->y;
 				break;
 			}
@@ -345,7 +520,7 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 			history[new_node_loc] = graph_location;
 			if(is_cheese(head->x,head->y+1,cheeses,cheese_loc)){
 				goal[0] = head->x;
-				goal[1] = head->y;
+				goal[1] = head->y+1;
 				break;
 			}
 		}	
@@ -356,7 +531,7 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 			head->next = insert_S(head->x-1,head->y,head->next);
 			history[new_node_loc] = graph_location;
 			if(is_cheese(head->x-1,head->y,cheeses,cheese_loc)){
-				goal[0] = head->x;
+				goal[0] = head->x-1;
 				goal[1] = head->y;
 				break;
 			}
@@ -552,8 +727,19 @@ int H_cost(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int mouse_lo
 
 		These arguments are as described in the search() function above
  */
-
- return(1);		// <-- Evidently you will need to update this.
+ 	int heuristics[10];
+    int i;
+	int min;
+	for (i = 0; i < 10; i++){
+		heuristics[i] = sqrt((cheese_loc[i][0] - x) * (cheese_loc[i][0] - x) + (cheese_loc[i][1] - y) * (cheese_loc[i][1] - y));
+		if (i == 0){
+			min = heuristics[i];
+		}
+		if (heuristics[i] < min){
+			min = heuristics[i];
+		}
+	}
+ return min; // <-- Evidently you will need to update this.
 }
 
 int H_cost_nokitty(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int mouse_loc[1][2], int cats, int cheeses, double gr[graph_size][4])
