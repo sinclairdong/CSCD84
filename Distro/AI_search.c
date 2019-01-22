@@ -239,9 +239,9 @@ void search(double gr[graph_size][4], int path[graph_size][2], int visit_order[s
 
 
  // Stub so that the code compiles/runs - The code below will be removed and replaced by your code!
-   if (mode == 1){
+   if (mode == 0){
 	   bfs(gr,path,visit_order,cat_loc,cats,cheese_loc,cheeses,mouse_loc);
-   } else if (mode == 2){
+   } else if (mode == 1){
 	   dfs(gr,path,visit_order,cat_loc,cats,cheese_loc,cheeses,mouse_loc);
    } //else if (mode == 2){
 
@@ -370,13 +370,12 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 	for(i = 0; i < graph_size; i++){
 		history[i] = -1;
 	}
-	//printf("%s\n", "Done");
 	// enter loop until stack is empty or head and rear == NULL
 	while (head != NULL){
 		// set the visit_order
 		visit_order[head->x][head->y] = order;
 		order++;
-		// check if rear is a cheese location if so break the loop
+		// check if the head is a cheese location if so break the loop
 		int i;
 		for(i = 0; i < cheeses; i++){
 			if((cheese_loc[i][0] == head->x) && (cheese_loc[i][1] == head->y)){
@@ -401,6 +400,7 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
         
 	    // top
 	    new_node_loc = cord_to_number(tmp->x,tmp->y+1);
+		printf("%d\n", history[new_node_loc]);
 	    if(gr[graph_location][0] && history[new_node_loc] == -1){
 		   head = insert_S(tmp->x,tmp->y+1,head);
 		   history[new_node_loc] = graph_location;
@@ -408,6 +408,7 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 		
 	    // right
 	    new_node_loc = cord_to_number(tmp->x+1,tmp->y);
+		//printf("%d\n", history[new_node_loc]);
 	    if(gr[graph_location][1] && history[new_node_loc] == -1){
 		   head = insert_S(tmp->x+1,tmp->y,head);
 		   history[new_node_loc] = graph_location;
@@ -415,6 +416,7 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 		
 	    // bottom
 	    new_node_loc = cord_to_number(tmp->x,tmp->y-1);
+		//printf("%d\n", history[new_node_loc]);
 	    if(gr[graph_location][2] && history[new_node_loc] == -1){
 		   head = insert_S(tmp->x,tmp->y-1,head);
 		   history[new_node_loc] = graph_location;
@@ -422,6 +424,7 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 		
 	    // left
 	    new_node_loc = cord_to_number(tmp->x-1,tmp->y);
+		//printf("%d\n", history[new_node_loc]);
 	    if(gr[graph_location][3] && history[new_node_loc] == -1){
 		   head = insert_S(tmp->x-1,tmp->y,head);
 		   history[new_node_loc] = graph_location;
