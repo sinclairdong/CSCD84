@@ -239,13 +239,13 @@ void search(double gr[graph_size][4], int path[graph_size][2], int visit_order[s
 
 
  // Stub so that the code compiles/runs - The code below will be removed and replaced by your code!
-   if mode == 0{
+   if (mode == 1){
 	   bfs(gr,path,visit_order,cat_loc,cats,cheese_loc,cheeses,mouse_loc);
-   } else if (mode == 1){
-	   dfs(gr,path,visit_order,cat_loc,cats,cheese_loc,cheeses,mouse_loc);
    } else if (mode == 2){
+	   dfs(gr,path,visit_order,cat_loc,cats,cheese_loc,cheeses,mouse_loc);
+   } //else if (mode == 2){
 
-   }
+   //}
 	return;
 }
 
@@ -286,7 +286,7 @@ void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 				break;
 			} 
 		}
-		
+		// expands the head node in the queue
 		// find the graph number converting from cord
 		int graph_location = cord_to_number(head->x,head->y);
 		
@@ -354,13 +354,12 @@ void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 }
 
 
-void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int mouse_loc[1][2]){
+void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int cheeses, int mouse_loc[1][2]){
 	// initialize a stack in a form of a linklist
 	struct Node* head;
-	struct Node* rear;
 	// add current location on stack
 	head = insert_S(mouse_loc[0][0],mouse_loc[0][1], NULL);
-	rear = head;
+	//head = rear;
 	// see how many nodes had been expanded
 	int order = 0;
 	// have somting to keep track of the predecessor and the final cheese position
@@ -371,12 +370,13 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 	for(i = 0; i < graph_size; i++){
 		history[i] = -1;
 	}
+	//printf("%s\n", "Done");
 	// enter loop until stack is empty or head and rear == NULL
 	while (head != NULL){
 		// set the visit_order
 		visit_order[head->x][head->y] = order;
 		order++;
-		// check if head is a cheese location if so break the loop
+		// check if rear is a cheese location if so break the loop
 		int i;
 		for(i = 0; i < cheeses; i++){
 			if((cheese_loc[i][0] == head->x) && (cheese_loc[i][1] == head->y)){
@@ -386,44 +386,71 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 			} 
 		}
 
-	}
-	// expand the nodes in the stack
-    // find the graph number converting from cord
-	int graph_location = cord_to_number(head->x,head->y);
+	
+	    // expand the nodes in the stack
+        // find the graph number converting from cord
+	    int graph_location = cord_to_number(head->x, head->y);
+	    // add 4 new node and I can't figure out a way to use a loop to do this
+	    // only add it when it has't been added before and it is a connection
+	    int new_node_loc;
+		//create temporary variable to store the head node
+		struct Node* tmp;
+		tmp = head;
+		//remove head as it is going to be expanded
+		head = head->next;
+        
+	    // top
+	    new_node_loc = cord_to_number(tmp->x,tmp->y+1);
+	    if(gr[graph_location][0] && history[new_node_loc] == -1){
+		   head = insert_S(tmp->x,tmp->y+1,head);
+		   history[new_node_loc] = graph_location;
+	    }
 		
-		// add 4 new node and I can't figure out a way to use a loop to do this
-		// only add it when it has't been added before and it is a connection
-		int new_node_loc;
+	    // right
+	    new_node_loc = cord_to_number(tmp->x+1,tmp->y);
+	    if(gr[graph_location][1] && history[new_node_loc] == -1){
+		   head = insert_S(tmp->x+1,tmp->y,head);
+		   history[new_node_loc] = graph_location;
+	    }	
 		
-		// top
-		new_node_loc = cord_to_number(head->x,head->y+1);
-		if(gr[graph_location][0] && history[new_node_loc] == -1){
-			rear = insert_S(head->x,head->y+1,rear);
-			history[new_node_loc] = graph_location;
-		}
+	    // bottom
+	    new_node_loc = cord_to_number(tmp->x,tmp->y-1);
+	    if(gr[graph_location][2] && history[new_node_loc] == -1){
+		   head = insert_S(tmp->x,tmp->y-1,head);
+		   history[new_node_loc] = graph_location;
+	    } 	
 		
-		// right
-		new_node_loc = cord_to_number(head->x+1,head->y);
-		if(gr[graph_location][1] && history[new_node_loc] == -1){
-			rear = insert_S(head->x+1,head->y,rear);
-			history[new_node_loc] = graph_location;
-		}	
-		
-		// bottom
-		new_node_loc = cord_to_number(head->x,head->y-1);
-		if(gr[graph_location][2] && history[new_node_loc] == -1){
-			rear = insert_S(head->x,head->y-1,rear);
-			history[new_node_loc] = graph_location;
-		}	
-		
-		// left
-		new_node_loc = cord_to_number(head->x-1,head->y);
-		if(gr[graph_location][3] && history[new_node_loc] == -1){
-			rear = insert_S(head->x-1,head->y,rear);
-			history[new_node_loc] = graph_location;
-		}
-		// remove the node from the stack ready for next iteration
-		rear = remove(rear);
+	    // left
+	    new_node_loc = cord_to_number(tmp->x-1,tmp->y);
+	    if(gr[graph_location][3] && history[new_node_loc] == -1){
+		   head = insert_S(tmp->x-1,tmp->y,head);
+		   history[new_node_loc] = graph_location;
+	    }
+        free(tmp);
+    }
+	// free any node that left behind in the stack in case if there is an early exit
+	struct Node* tmp;
+	while (head != NULL)
+    {
+       tmp = head;
+       head = head->next;
+       free(tmp);
+    }
+    // to do- with the goal location use history to trace back all path then update the path then return
+    // find the backward path first
+    int reverse[graph_size];
+    int initial_location = cord_to_number(mouse_loc[0][0],mouse_loc[0][1]);
+    int pointer = 0;
+    reverse[0] = cord_to_number(goal[0],goal[1]);
+    while(reverse[pointer] != initial_location){
+    	reverse[pointer+1] = history[reverse[pointer]];
+    	pointer++;
+    }
+    i = 0;
+	for(pointer; pointer >= 0; pointer--){
+		path[i][0]=reverse[pointer] % size_X;
+		path[i][1]=reverse[pointer] / size_X;
+		i++;
 	}
 	return;
 }
