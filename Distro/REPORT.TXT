@@ -8,17 +8,17 @@ mark.
 
 ________________________________________________
 
-Student Name 1 (last, first):
+Student Name 1 (last, first): Dong Yuesen
 
-Student Name 2 (last, first):
+Student Name 2 (last, first): Gao Toa
 
-Student number 1:
+Student number 1: 1002387632
 
-Student number 2:
+Student number 2: 1001368281
 
-UTORid 1:
+UTORid 1: dongyues
 
-UTORid 2:
+UTORid 2: gaotao2
 
 READ THIS AND SIGN YOUR NAME AT THE END:
 
@@ -26,7 +26,7 @@ READ THIS AND SIGN YOUR NAME AT THE END:
 honesty and plaguarism. All work submitted as part
 of this assignment is my own.
 
-	Signed: _(student 1 name here)__	_(student 2 name here)__
+	Signed: _(Dong Yuesen)__	_(Tao Gao)__
 
 
 (-5 marks for failing to provide the identifying
@@ -38,28 +38,34 @@ but explain carefully when needed.
 
 1 .- (1 marks) Of BFS and DFS, which search algorithm yields the best results? (i.e. which is more likely
      to get the mouse to the cheese safely before being eaten?)
-
+		BFS of course.... it is much better than DFS 
 
 2 .- (1 marks) Does this mean that in general BFS is a better search algorithm? (yes/no and give reasons to
      support your answer based on your observations)
-
+		No DFS will more likely to reach the node earlier if for say in a tree when the node is really deep in the tree
 
 3 .- (2 marks) Describe the heuristic function you used for A* search. Why is this heuristic admissible?
-
+		We use Euclid distance as our heuristic function. The shortest distance will be the straightline between those two.
+		Thus there isn't any other way that actrual cost would be greater than that unless it goes to another demension. 
 
 4 .- (1 marks) Explain how your heuristic function accounts for the presence of multiple cheeses.
-
+		we choose the chesse that is closest to the current cell.
 
 5 .- (1 marks) Is A* equivalent to BFS for this problem? or is it better/worse? explain your answer based on 
      your observations.
-
+			No they are not the same. At least with our H function. the algo will in favor the cell in the ganeral location of the chesse compare to
+			some cell that are same distance but in a random direction. Thus A* is more efficient. 
 6 .- (2 marks) Describe your heuristic function for A*-nokitty. How does it work? what factors are considered
      into the cost function? is it admissible (yes/no and why)?
-
+			we consider the cat location as well. We will decrese the piority (by increasing it's cost) to the cell that are closer to a cat
+			This is not admissible as we give cat a weight and add that to the cost. It will likely surpass the actrual cost.
+			
+			we increase it because the cat is there we want our mouse to stay away from that. 
 7 .- (2 marks) What is the largest limitation of the search algorithms implemented in this assignment?
      (i.e. is there anything we are missing that could lead to a smarter mouse?) - this is
      a more or less open question, but we talked about it in lecture!
-
+			in our algorythem we consider a path the minutes we saw a gole(according to the graph provided in pdf)
+			we suppose to expand it to make sure that is the absolute shortest or optimal path.
 _____________________________________________________
 
 Mark with an 'x' where appropriate. If something is only working partially, briefly describe what works, what
@@ -67,15 +73,16 @@ doesn't work, or what problems exist.
 	
 		Complete/Working	Partial		Not done
 
-DFS
+DFS            X
 
-BFS
+BFS            X
 
-A*
+A*             X
 
-H
+H              X
 
-H_no_cats
+H_no_cats                     X                    some times the cat do catch the mouse when there is solution to escape when smart turn to 1
+                                                   If i have more time to do more experiment i can tweek the H_no_cats a bit better.
 
 _____________________________________________________
 
