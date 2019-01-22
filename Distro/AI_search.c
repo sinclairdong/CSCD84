@@ -286,7 +286,7 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 	head = insert_S(mouse_loc[0][0],mouse_loc[0][1], NULL);
 	
 	// see how many nodes had been expanded
-	int order = 100;
+	int order = 0;
 	// have somting to keep track of the predecessor and the final chees position
 	// initialize the x value to be -1 to indicate that it hasn't been visited yet
 	int history[graph_size];
@@ -416,7 +416,7 @@ void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 	rear = head;
 	
 	// see how many nodes had been expanded
-	int order = 100;
+	int order = 0;
 	// have somting to keep track of the predecessor and the final chees position
 	// initialize the x value to be -1 to indicate that it hasn't been visited yet
 	int history[graph_size];
