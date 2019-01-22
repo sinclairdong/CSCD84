@@ -223,34 +223,34 @@ struct Node* insert_S(int x, int y, Node * next){
 
 //insert a node into a priority queue implemented using linkedlist
 struct Node* insert_P(int x, int y, int cost, Node * head){
+
+
 	struct Node* result = (struct Node *) malloc(sizeof(struct Node));
 	result->x = x;
 	result->y = y;
 	result->cost = cost;
-	printf("%d %d %d \n", x, y, cost);
 	result->next = NULL;
+
     if (head == NULL){
          head = result;
 		 return result;
 	}
-	while(head != NULL){
-		if (head->next != NULL){
-            if (result->cost >= head->cost && result->cost < head->cost){
-				struct Node* tmp;
-			    tmp = head->next;
-			    head->next = result;
-				result->next = tmp;
-			    return result;
-		    }  
-	    }else{
-			head->next = result;
-			return result;
-		}
-		head = head->next;
-	}
-	return result;
-}
 
+	if (head->cost > result->cost){
+		result->next = head;
+		return result;
+	}
+	
+	struct Node* temp = head;
+
+	while(temp->next != NULL && result->cost > temp->next->cost){
+		temp = temp->next;
+	}
+	result->next = temp->next;
+	temp->next = result;
+
+	return head;
+}
 
 // remove a node from the linked list and return the pointer to the next node
 struct Node* remove(Node * head){
@@ -259,35 +259,10 @@ struct Node* remove(Node * head){
 	return result;	
 }
 
-//clean the same nodes with higher cost
-struct Node * clean(int x, int y, int cost, Node * head){
-	if (head != NULL){
-		if (head->x = x && head->y ==y && head->cost >= cost){
-			head = head->next;
-			return NULL;
-		}
-	}
-	while (head->next != NULL){
-		printf("%s\n", "Yes");
-        if (head->next->x == x && head->next->y == y && head->next->cost >= cost){
-            struct Node * tmp;
-			tmp = head->next;
-			head->next = head->next->next;
-			free(tmp);
-			return NULL;
-		}
-		head = head->next;
-	}
-	return NULL;
-}
-
-
 // function turn a number to xy cord by the fomula given by the hand out
 int cord_to_number(int x_cord, int y_cord){
 	return y_cord * size_X + x_cord;
 }
-
-
 
 void search(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int cheeses, int mouse_loc[1][2], int mode, int (*heuristic)(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int mouse_loc[1][2], int cats, int cheeses, double gr[graph_size][4]))
 {
@@ -298,9 +273,8 @@ void search(double gr[graph_size][4], int path[graph_size][2], int visit_order[s
 	} else if (mode == 1){
 		dfs(gr,path,visit_order,cat_loc,cats,cheese_loc,cheeses,mouse_loc);
     } else if (mode == 2){
-        a_star(gr,path,visit_order,cat_loc,cats,cheese_loc,cheeses,mouse_loc);
-
-	}
+    	a_star(gr,path,visit_order,cat_loc,cats,cheese_loc,cheeses,mouse_loc, *heuristic);
+    }
 /*	printf("Path:X:%d Y:%d\n",path[1][0],path[1][1]);*/
 /*	printf("Cat:X:%d Y:%d\n\n",cat_loc[0][0],cat_loc[0][1]);*/
 	return;
@@ -330,6 +304,152 @@ int is_cat(int x, int y, int cats, int cat_loc[10][2]){
 	return 0;
 }
 
+void a_star(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int cheeses, int mouse_loc[1][2], int (*heuristic)(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int mouse_loc[1][2], int cats, int cheeses, double gr[graph_size][4])){
+	// if on top of hceese stay where you are
+	if(is_cheese(mouse_loc[0][0], mouse_loc[0][1], cheeses, cheese_loc)){
+		path[0][0] = mouse_loc[0][0];
+		path[0][1] = mouse_loc[0][1];
+		path[1][0] = mouse_loc[0][0];
+		path[1][1] = mouse_loc[0][1];
+		return;
+	}
+	// initialize a queue in a form of a linklist
+	struct Node* head;
+	// add current location on queue
+	head = insert_P(mouse_loc[0][0],mouse_loc[0][1], 0, NULL);
+	
+	// see how many nodes had been expanded
+	int order = 0;
+	// have somting to keep track of the predecessor and the final chees position
+	// initialize the x value to be -1 to indicate that it hasn't been visited yet
+	int history[graph_size][2];
+	history[cord_to_number(head->x,head->y)][1]=0;
+	int goal[2];
+	goal[0] = -1;
+	goal[1] = -1;
+	int i;
+	for(i = 0; i < graph_size; i++){
+		history[i][0] = -1;
+	}
+	// now keep looping untill we found the chess or the stack is empty
+	while (head != NULL){
+		// set the visit_order
+		visit_order[head->x][head->y] = order;
+		order++;
+				
+		// find the graph number converting from cord
+		int graph_location = cord_to_number(head->x,head->y);
+		
+		// add 4 new node and I can't figure out a way to use a loop to do this
+		// only add it when it has't been added before and it is a connection
+		int new_node_loc;
+		int cost;
+		
+		// top
+		new_node_loc = cord_to_number(head->x,head->y-1);
+		if((gr[graph_location][0] == 1) && (history[new_node_loc][0] == -1 && !(is_cat(head->x,head->y-1,cats,cat_loc)))){
+		
+			history[new_node_loc][0] = graph_location;
+			history[new_node_loc][1] = history[graph_location][1] + 1;
+			cost = history[new_node_loc][1] + heuristic(head->x,head->y-1, cat_loc, cheese_loc, mouse_loc, cats, cheeses, gr);
+			head->next = insert_P(head->x,head->y-1,cost,head->next);
+			
+			if(is_cheese(head->x,head->y-1,cheeses,cheese_loc)){
+				goal[0] = head->x;
+				goal[1] = head->y-1;
+				break;
+			}
+		}
+		
+		// right
+		new_node_loc = cord_to_number(head->x+1,head->y);
+		if((gr[graph_location][1] == 1) && (history[new_node_loc][0] == -1 && !(is_cat(head->x+1,head->y,cats,cat_loc)))){
+			
+			history[new_node_loc][0] = graph_location;
+			history[new_node_loc][1] = history[graph_location][1] + 1;
+			cost = history[new_node_loc][1] + heuristic(head->x+1,head->y, cat_loc, cheese_loc, mouse_loc, cats, cheeses, gr);
+			head->next = insert_P(head->x+1,head->y,cost, head->next);
+			
+			if(is_cheese(head->x+1,head->y,cheeses,cheese_loc)){
+				goal[0] = head->x+1;
+				goal[1] = head->y;
+				break;
+			}
+		}	
+		
+		// bottom
+		new_node_loc = cord_to_number(head->x,head->y+1);
+		if((gr[graph_location][2] == 1) && (history[new_node_loc][0] == -1 && !(is_cat(head->x,head->y+1,cats,cat_loc)))){
+		
+			history[new_node_loc][0] = graph_location;
+			history[new_node_loc][1] = history[graph_location][1] + 1;
+			cost = history[new_node_loc][1] + heuristic(head->x,head->y+1, cat_loc, cheese_loc, mouse_loc, cats, cheeses, gr);
+			head->next = insert_P(head->x,head->y+1,cost, head->next);
+
+			if(is_cheese(head->x,head->y+1,cheeses,cheese_loc)){
+				goal[0] = head->x;
+				goal[1] = head->y+1;
+				break;
+			}
+		}	
+		
+		// left
+		new_node_loc = cord_to_number(head->x-1,head->y);
+		if((gr[graph_location][3] == 1) && (history[new_node_loc][0] == -1 && !(is_cat(head->x-1,head->y,cats,cat_loc)))){
+		
+			history[new_node_loc][0] = graph_location;
+			history[new_node_loc][1] = history[graph_location][1] + 1;
+			head->next = insert_P(head->x-1,head->y,cost, head->next);
+			cost = history[new_node_loc][1] + heuristic(head->x-1,head->y, cat_loc, cheese_loc, mouse_loc, cats, cheeses, gr);
+
+			if(is_cheese(head->x-1,head->y,cheeses,cheese_loc)){
+				goal[0] = head->x-1;
+				goal[1] = head->y;
+				break;
+			}
+		}
+		// remove the node from the queue ready for next iteration
+		head = remove(head);
+	}
+	// printf("X:%dY:%d\n",goal[0],goal[1]);
+	// no goal stay where you are
+	if(goal[0] == -1){
+		for(i=0;i<graph_size;i++){
+			path[i][0] = mouse_loc[0][0];
+			path[i][1] = mouse_loc[0][1];
+		}
+		return;
+	}
+	
+	// free any node that left behind in the stack in case if there is an early exit
+	struct Node* tmp;
+	while (head != NULL)
+    {
+       tmp = head;
+       head = head->next;
+       free(tmp);
+    }
+    // to do- with the goal location use history to trace back all path then update the path then return
+    // find the backward path first
+    int reverse[graph_size];
+    int initial_location = cord_to_number(mouse_loc[0][0],mouse_loc[0][1]);
+    int pointer = 0;
+    reverse[0] = cord_to_number(goal[0],goal[1]);
+    while(reverse[pointer] != initial_location){
+    	reverse[pointer+1] = history[reverse[pointer]][0];
+    	pointer++;
+    }
+
+    i = 0;
+	for(pointer; pointer >= 0; pointer--){
+		path[i][0]=reverse[pointer] % size_X;
+		path[i][1]=reverse[pointer] / size_X;
+		i++;
+	}
+	return;
+
+}
+
 void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int cheeses, int mouse_loc[1][2]){
 	// if on top of hceese stay where you are
 	if(is_cheese(mouse_loc[0][0], mouse_loc[0][1], cheeses, cheese_loc)){
@@ -345,7 +465,7 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 	head = insert_S(mouse_loc[0][0],mouse_loc[0][1], NULL);
 	
 	// see how many nodes had been expanded
-	int order = 100;
+	int order = 0;
 	// have somting to keep track of the predecessor and the final chees position
 	// initialize the x value to be -1 to indicate that it hasn't been visited yet
 	int history[graph_size];
@@ -376,7 +496,7 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 			history[new_node_loc] = graph_location;
 			if(is_cheese(head->x,head->y-1,cheeses,cheese_loc)){
 				goal[0] = head->x;
-				goal[1] = head->y;
+				goal[1] = head->y-1;
 				break;
 			}
 		}
@@ -387,7 +507,7 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 			head->next = insert_S(head->x+1,head->y,head->next);
 			history[new_node_loc] = graph_location;
 			if(is_cheese(head->x+1,head->y,cheeses,cheese_loc)){
-				goal[0] = head->x;
+				goal[0] = head->x+1;
 				goal[1] = head->y;
 				break;
 			}
@@ -400,7 +520,7 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 			history[new_node_loc] = graph_location;
 			if(is_cheese(head->x,head->y+1,cheeses,cheese_loc)){
 				goal[0] = head->x;
-				goal[1] = head->y;
+				goal[1] = head->y+1;
 				break;
 			}
 		}	
@@ -411,7 +531,7 @@ void dfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 			head->next = insert_S(head->x-1,head->y,head->next);
 			history[new_node_loc] = graph_location;
 			if(is_cheese(head->x-1,head->y,cheeses,cheese_loc)){
-				goal[0] = head->x;
+				goal[0] = head->x-1;
 				goal[1] = head->y;
 				break;
 			}
@@ -475,7 +595,7 @@ void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 	rear = head;
 	
 	// see how many nodes had been expanded
-	int order = 100;
+	int order = 0;
 	// have somting to keep track of the predecessor and the final chees position
 	// initialize the x value to be -1 to indicate that it hasn't been visited yet
 	int history[graph_size];
@@ -586,164 +706,7 @@ void bfs(double gr[graph_size][4], int path[graph_size][2], int visit_order[size
 	}
 	return;
 }
-void a_star(double gr[graph_size][4], int path[graph_size][2], int visit_order[size_X][size_Y], int cat_loc[10][2], int cats, int cheese_loc[10][2], int cheeses, int mouse_loc[1][2]){
-    // if on top of cheese, stay where you are
-	if(is_cheese(mouse_loc[0][0], mouse_loc[0][1], cheeses, cheese_loc)){
-		path[0][0] = mouse_loc[0][0];
-		path[0][1] = mouse_loc[0][1];
-		path[1][0] = mouse_loc[0][0];
-		path[1][1] = mouse_loc[0][1];
-		return;
-	}
-	// initialize a queue in a form of a linklist
-	struct Node* head;
-	struct Node* result;
-	int cost;
-	int start_x;
-	int start_y;
-	//compute the cost
-	start_x =  mouse_loc[0][0];
-	start_y =  mouse_loc[0][1];
-	cost = G_cost(start_x, start_y, mouse_loc[0][0], mouse_loc[0][1]) +  H_cost(mouse_loc[0][0],mouse_loc[0][1], cat_loc, cheese_loc, mouse_loc, cats, cheeses, gr);
-	// add current location on queue
-	head = insert_P(mouse_loc[0][0],mouse_loc[0][1], cost, NULL);
-	result = head;
-	
-	// see how many nodes had been expanded
-	int order = 100;
-	// have somting to keep track of the predecessor and the final chees position
-	// initialize the x value to be -1 to indicate that it hasn't been visited yet
-	int history[graph_size];
-	int goal[2];
-	goal[0] = -1;
-	goal[1] = -1;
-	int i;
-	for(i = 0; i < graph_size; i++){
-		history[i] = -1;
-	}
-    
-	// now keep looping untill we found the chess or the stack is empty
-	while (head != NULL){
-		printf("headx: %d heady:%d headcost:%d\n", head->x, head->y, head->cost);
-		// set the visit_order
-		visit_order[head->x][head->y] = order;
-		order++;
-				
-		// find the graph number converting from cord
-		int graph_location = cord_to_number(head->x,head->y);
-		
-		// add 4 new node and I can't figure out a way to use a loop to do this
-		// only add it when it has't been added before and it is a connection
-		int new_node_loc;
-		
-		// top
-		new_node_loc = cord_to_number(head->x,head->y-1);
-		printf("this round it is %d\n", head->next==NULL);
-		if((gr[graph_location][0] == 1) && (history[new_node_loc] == -1 && !(is_cat(head->x,head->y-1,cats,cat_loc)))){
-			cost = G_cost(start_x,start_y, head->x, head->y-1) + H_cost(head->x,head->y-1, cat_loc, cheese_loc, mouse_loc, cats, cheeses, gr);
-			clean(head->x, head->y-1, cost, head);
-			result = insert_P(head->x,head->y-1,cost,head);
-			history[new_node_loc] = graph_location;
-			if(is_cheese(result->x,result->y,cheeses,cheese_loc)){
-				goal[0] = result->x;
-				goal[1] = result->y;
-				break;
-			}
-		}
-		
-		// right
-		new_node_loc = cord_to_number(head->x+1,head->y);
-		if((gr[graph_location][1] == 1) && (history[new_node_loc] == -1 && !(is_cat(head->x+1,head->y,cats,cat_loc)))){
-			
-			cost = G_cost(start_x,start_y, head->x + 1, head->y) + H_cost(head->x + 1,head->y, cat_loc, cheese_loc, mouse_loc, cats, cheeses, gr);
-			clean(head->x+1, head->y, cost, head);
-			
-			result = insert_P(head->x+1,head->y,cost,head);
-			
-			history[new_node_loc] = graph_location;
-			if(is_cheese(result->x,result->y,cheeses,cheese_loc)){
-				goal[0] = result->x;
-				goal[1] = result->y;
-				break;
-			}
-		}	
-		
-		// bottom
-		new_node_loc = cord_to_number(head->x,head->y+1);
-		if((gr[graph_location][2] == 1) && (history[new_node_loc] == -1 && !(is_cat(head->x,head->y+1,cats,cat_loc)))){
-			cost = G_cost(start_x,start_y, head->x, head->y+1) + H_cost(head->x,head->y + 1, cat_loc, cheese_loc, mouse_loc, cats, cheeses, gr);
-			clean(head->x, head->y+1, cost, head);
-			result = insert_P(head->x,head->y+1,cost,head);
-			history[new_node_loc] = graph_location;
-			if(is_cheese(result->x,result->y,cheeses,cheese_loc)){
-				goal[0] = result->x;
-				goal[1] = result->y;
-				break;
-			}
-		}	
-		
-		// left
-		new_node_loc = cord_to_number(head->x-1,head->y);
-		if((gr[graph_location][3] == 1) && (history[new_node_loc] == -1 && !(is_cat(head->x-1,head->y,cats,cat_loc)))){
-			cost = G_cost(start_x,start_y, head->x-1, head->y) + H_cost(head->x-1,head->y, cat_loc, cheese_loc, mouse_loc, cats, cheeses, gr);
-			clean(head->x-1, head->y, cost, head);
-			result = insert_P(head->x-1,head->y,cost,head);
-			history[new_node_loc] = graph_location;
-			if(is_cheese(result->x,result->y,cheeses,cheese_loc)){
-				goal[0] = result->x;
-				goal[1] = result->y;
-				break;
-			}
-		}
-		// remove the node from the queue ready for next iteration
-		head = remove(head);
-	}
-	
-	// printf("X:%dY:%d\n",goal[0],goal[1]);
-	// no goal stay where you are
-	if(goal[0] == -1){
-		path[0][0] = mouse_loc[0][0];
-		path[0][1] = mouse_loc[0][1];
-		path[1][0] = mouse_loc[0][0];
-		path[1][1] = mouse_loc[0][1];
-		return;
-	}
-	
-	// free any node that left behind in the stack in case if there is an early exit
-	struct Node* tmp;
-	while (head != NULL)
-    {
-       tmp = head;
-       head = head->next;
-       free(tmp);
-    }
-    // to do- with the goal location use history to trace back all path then update the path then return
-    // find the backward path first
-    int reverse[graph_size];
-    int initial_location = cord_to_number(mouse_loc[0][0],mouse_loc[0][1]);
-    int pointer = 0;
-    reverse[0] = cord_to_number(goal[0],goal[1]);
-    while(reverse[pointer] != initial_location){
-    	reverse[pointer+1] = history[reverse[pointer]];
-    	pointer++;
-    }
 
-    i = 0;
-	for(pointer; pointer >= 0; pointer--){
-		path[i][0]=reverse[pointer] % size_X;
-		path[i][1]=reverse[pointer] / size_X;
-		i++;
-	}
-	return;
-}
-int G_cost(int x, int y, int mouse_loc_x, int mouse_loc_y){
-	/*
-	This function computes and return the distance between the start location and the current location
-	*/
-    int g;
-    g = sqrt((mouse_loc_x - x) * (mouse_loc_x - x) + (mouse_loc_y - y) * (mouse_loc_y - y));
-	return g;
-}
 int H_cost(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int mouse_loc[1][2], int cats, int cheeses, double gr[graph_size][4])
 {
  /*
@@ -764,10 +727,12 @@ int H_cost(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int mouse_lo
 
 		These arguments are as described in the search() function above
  */
-    int heuristics[10];
+ 	// find the euclidy distance from current to cheeses
+ 	// it must be bonded by the actrual cost because it i in 2 D the straight line is the shortest distance
+ 	int heuristics[cheeses];
     int i;
 	int min;
-	for (i = 0; i < 10; i++){
+	for (i = 0; i < cheeses; i++){
 		heuristics[i] = sqrt((cheese_loc[i][0] - x) * (cheese_loc[i][0] - x) + (cheese_loc[i][1] - y) * (cheese_loc[i][1] - y));
 		if (i == 0){
 			min = heuristics[i];
@@ -776,7 +741,7 @@ int H_cost(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int mouse_lo
 			min = heuristics[i];
 		}
 	}
- return min;
+ return min; // <-- Evidently you will need to update this.
 }
 
 int H_cost_nokitty(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int mouse_loc[1][2], int cats, int cheeses, double gr[graph_size][4])
@@ -795,7 +760,32 @@ int H_cost_nokitty(int x, int y, int cat_loc[10][2], int cheese_loc[10][2], int 
 
 	Input arguments have the same meaning as in the H_cost() function above.
  */
-
- return(1);		// <-- Evidently you will need to update this.
+ 	// same as above but add cat location to it as the clost cat
+ 	// find the closet cat
+ 	int cat, i, min_cat;
+ 	if(cats > 0){
+ 		min_cat = (cat_loc[0][0]-x) + (cat_loc[0][1]-y);
+ 		for(i = 1; i < cats; i++){
+ 			cat = (size_X + size_Y) - ((cat_loc[i][0]-x) + (cat_loc[i][1]-y));
+ 			if (cat < min_cat){
+ 				min_cat = cat;
+ 			}
+ 		}
+ 	}
+ 	
+ 	
+ 	
+ 	int heuristics[10];
+	int min;
+	for (i = 0; i < 10; i++){
+		heuristics[i] = sqrt((cheese_loc[i][0] - x) * (cheese_loc[i][0] - x) + (cheese_loc[i][1] - y) * (cheese_loc[i][1] - y));
+		if (i == 0){
+			min = heuristics[i];
+		}
+		if (heuristics[i] < min){
+			min = heuristics[i];
+		}
+	}
+ return min + min_cat;		// <-- Evidently you will need to update this.
 }
 
