@@ -1,0 +1,137 @@
+CSC D84 - Artificial Intelligence
+
+Assignment 2 - MiniMax and Game Trees 
+
+This assignment is worth:
+
+10 AIUs (Artificial Intelligence Units)
+toward the 35% assignment component of your final
+mark.
+
+________________________________________________
+
+Student Name 1 (last, first): Dong Yuesen
+
+Student Name 2 (last, first): N/A
+
+Student number 1:1002387632
+
+Student number 2:N/A
+
+UTORid 1:dongyues
+
+UTORid 2:N/A
+
+READ THIS AND SIGN YOUR NAME AT THE END:
+
+ I certify that I have read the UTSC code on academic
+honesty and plaguarism. All work submitted as part
+of this assignment is my own.
+
+	Signed: _Dong Yuesen__	_(student 2 name here)__
+
+
+(-5 marks for failing to provide the identifying
+ information requested above)
+________________________________________________
+
+Answer the following questions. Be concise and clear
+but explain carefully when needed.
+
+1 .- (5 marks) Explain the design of your utility function.
+     Describe all the factors that influence its value, and
+     how their influence was evaluated and integrated into
+     a single, meaningful value. Convince us that your utility
+     makes sense!
+     
+     I used the A* algo to find the actrual distance between mouse and cats and mouse and cheeses
+     Then i sum all the (graphsize - distance) to the cheese and subtract all the (graphsize - distance) cats
+     IE the closer to the cheeses the better and the far away from the cats are better
+     
+     I also intrudce a weight facter of 10 for chesses that mouse will pioritize cheese over avoiding cats
+
+2 .- (2 marks) Ignoring computation time, what is the effect of
+     search depth (number of turns) on the chances of the mouse
+     winning the game. 
+     
+     The larger the search depth the better path the mouse chooses.
+     Also plz consider that for the command below, any depth less than 5 will result in a lost game
+     ./MiniMax_search 2415 2 2 1 5 1
+     
+     Thus the mouse perform much better inthat case
+     
+3 .- (2 marks) What situations will cause your mouse to lose?
+     can these be fixed either with the utility function, or
+     by changing the search depth? if so, how?
+     
+     First the search depth is a big problem like i mentioned above that a depth less than 5 will result in a lost game
+     Also, there might be a case that the mouse are performing high risk move that alow the cat to have a chance.
+     Recall that I introduced a 10* weight factor to aovid a stalemate where the cat and the mouse are running in a loop.
+     I could change the algo that make the mouse won't lose the game(recall that it might end up in a dra as mouse and cat are running in loops)
+     Also there is another chance that the game setup is not winable that the cat will catch the mouse regardlessly.
+
+4 .- (2 marks) Compare cats with smartness=.8 against cats with
+     smartness=1 - which are harder for your mouse to beat?
+     why do you think that is?
+     
+     I don't really see any difference in cat behavior with .8 and 1
+     
+     I might be missing somthing but I don't think it post a challenge to the mouse when i run with depth 5
+
+5 .- (2 marks) Can the mouse be made unbeatable by having an
+     optimal utility function?
+     
+     No. Again, there are games that is not winable. for example the mouse are surranded by cats
+     Like the reason to have a util function is to aovid exlpor the entire tree but even if we exlore entire tree there is a chance that the game is not winable
+
+6 .- (2 bonus marks) Could a human playing the game in place
+      of the mouse do better than your code? (yes, no, and
+      a reasonable explanation of why)
+	
+		Yes. I (Recall that I am a human) can takein more factor compare to the code 
+		I can do only useful searches and overall I can evolve better and constanly improving myself
+_____________________________________________________
+
+Mark with an 'x' where appropriate. If something is only
+working partially, briefly describe what works, what
+doesn't work, or what problems exist.
+	
+	Complete/Working	Partial		Not done
+
+Utility   x
+ function
+
+MiniMax
+
+Alpha/Beta x
+ pruning
+_____________________________________________________
+
+Marking:
+
+(10 marks) Implemented a non-trivial, clever, and
+           effective utility function. It allows the
+           mouse to win the game often. 
+
+(10 marks) Correctly implementing MiniMax. The algorithm
+           should produce the expected behaviour. The
+           mouse should take a reasonable path to the
+           cheese and avoid cats. The cats will try to
+           catch the mouse. Mouse is not easy to catch.
+
+(10 marks) Implemented alpha-beta pruning. The algorithm
+           significantly reduces the amount of search
+           while producing identical results as those
+           from standard MiniMax 
+
+(15 marks) Competitive (TA assigned) based on how smart
+           your mouse is (this is related to your
+           utility function above!)
+
+(15 marks) Answers in this report file
+
+(2 bonus)  Bonus!
+
+Total for A2:       / out of 60
+
+
